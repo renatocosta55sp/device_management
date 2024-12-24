@@ -2,7 +2,7 @@
 
 ## Let's Run the Application 
 
-Rename .env.example to .env and then fill it out with the real values.
+Rename the .env.example file to .env and then populate it with the real values shared via email.
 
 ```
 docker-compose up

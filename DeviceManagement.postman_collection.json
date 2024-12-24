@@ -1,0 +1,183 @@
+{
+	"info": {
+		"_postman_id": "670d9fbe-9e4d-4e27-9a63-975f0ec3e6ea",
+		"name": "DeviceManagement",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "169853"
+	},
+	"item": [
+		{
+			"name": "Add Device",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Samsung Galaxy\",\n    \"brand\": \"Android\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "127.0.0.1/devices",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"path": [
+						"devices"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Device",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Iphonea\",\n    \"brand\": \"Apple\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "127.0.0.1/devices/d5b718f0-5cee-4316-b766-3b3939d39674",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"path": [
+						"devices",
+						"d5b718f0-5cee-4316-b766-3b3939d39674"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Device",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "127.0.0.1/devices/d5b718f0-5cee-4316-b766-3b3939d39674",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"path": [
+						"devices",
+						"d5b718f0-5cee-4316-b766-3b3939d39674"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Device partially",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Sams22\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "127.0.0.1/devices/d5b718f0-5cee-4316-b766-3b3939d39674",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"path": [
+						"devices",
+						"d5b718f0-5cee-4316-b766-3b3939d39674"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Device By ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "127.0.0.1/devices/d5b718f0-5cee-4316-b766-3b3939d39674",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"path": [
+						"devices",
+						"d5b718f0-5cee-4316-b766-3b3939d39674"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Device By Brand",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "127.0.0.1/devices/brand/apple",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"path": [
+						"devices",
+						"brand",
+						"apple"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Devices",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "127.0.0.1/devices",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"path": [
+						"devices"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

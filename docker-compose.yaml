@@ -1,0 +1,32 @@
+services:
+  postgres:
+    image: postgres:latest
+    container_name: device_management_postgres
+    ports:
+      - 5432:5432
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - database_dockerizing:/var/lib/postgresql/data
+    networks:
+      - fullstack
+  api:
+    container_name: device_management_api
+    build: .
+    ports:
+      - 8080:8080
+    restart: always
+    depends_on:
+      - postgres    
+    networks:
+      - fullstack
+
+volumes:
+  database_dockerizing:
+
+networks:
+  fullstack:
+    driver: bridge

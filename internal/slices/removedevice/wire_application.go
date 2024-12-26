@@ -1,4 +1,4 @@
-package adddevice
+package removedevice
 
 import (
 	"context"
@@ -14,11 +14,11 @@ func WireApp(ctx context.Context, eventBus *bus.EventBus, repo persistence.RepoD
 
 	eventChan := make(chan domain.Event)
 
-	eventBus.Subscribe(events.DeviceAddedEvent, eventChan)
+	eventBus.Subscribe(events.DeviceRemovedEvent, eventChan)
 
 	eventHandlers := []slice.EventHandler{
 		{
-			EventName: events.DeviceAddedEvent,
+			EventName: events.DeviceRemovedEvent,
 			Handler:   NewDeviceProjection(repo),
 		},
 	}

@@ -1,4 +1,4 @@
-package adddevice
+package updatedevice
 
 import (
 	"context"
@@ -20,7 +20,6 @@ func NewDeviceProjection(repo persistence.RepoDevice) slice.EventHandleable {
 }
 
 func (d DeviceProjection) On(ctx context.Context, event domain.Event) error {
-	evt := event.Data.(events.DeviceAdded)
-	_, err := d.repo.Add(&evt, ctx)
-	return err
+	evt := event.Data.(events.DeviceUpdated)
+	return d.repo.Update(&evt, ctx)
 }

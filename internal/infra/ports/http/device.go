@@ -12,6 +12,8 @@ import (
 	"github.com/renatocosta55sp/device_management/internal/domain/commands"
 	"github.com/renatocosta55sp/device_management/internal/infra/adapters/persistence"
 	"github.com/renatocosta55sp/device_management/internal/slices/adddevice"
+	"github.com/renatocosta55sp/device_management/internal/slices/removedevice"
+	"github.com/renatocosta55sp/device_management/internal/slices/updatedevice"
 	"github.com/renatocosta55sp/modeling/infra/bus"
 	"github.com/renatocosta55sp/modeling/slice"
 	"github.com/sirupsen/logrus"
@@ -105,7 +107,7 @@ func (h HttpServer) UpdateDevice(ctx *gin.Context) {
 	eventBus := bus.NewEventBus()
 	_, ctxCancFunc := context.WithTimeout(context.Background(), 5*time.Second)
 
-	eventResultChan := adddevice.WireApp(ctx,
+	eventResultChan := updatedevice.WireApp(ctx,
 		eventBus,
 		*persistence.NewDeviceRepository(h.Db, "public"),
 	)
@@ -158,7 +160,7 @@ func (h HttpServer) RemoveDevice(ctx *gin.Context) {
 	eventBus := bus.NewEventBus()
 	_, ctxCancFunc := context.WithTimeout(context.Background(), 5*time.Second)
 
-	eventResultChan := adddevice.WireApp(ctx,
+	eventResultChan := removedevice.WireApp(ctx,
 		eventBus,
 		*persistence.NewDeviceRepository(h.Db, "public"),
 	)

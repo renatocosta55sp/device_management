@@ -8,7 +8,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/renatocosta55sp/device_management/internal/infra"
-	"github.com/renatocosta55sp/device_management/internal/infra/ports/http"
 	"github.com/sirupsen/logrus"
 )
 
@@ -42,8 +41,7 @@ func main() {
 	defer db.Close()
 
 	server := gin.Default()
-	h := http.HttpServer{Db: db}
-	http.InitRoutes(&server.RouterGroup, h)
+	infra.InitRoutes(&server.RouterGroup, db)
 
 	serverErr := make(chan error, 1)
 	go func() {

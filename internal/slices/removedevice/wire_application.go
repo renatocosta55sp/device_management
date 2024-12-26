@@ -19,7 +19,7 @@ func WireApp(ctx context.Context, eventBus *bus.EventBus, repo persistence.RepoD
 	eventHandlers := []slice.EventHandler{
 		{
 			EventName: events.DeviceRemovedEvent,
-			Handler:   NewDeviceProjection(repo),
+			Handler:   NewDeviceReadModel(repo),
 		},
 	}
 

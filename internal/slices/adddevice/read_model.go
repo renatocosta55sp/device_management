@@ -1,4 +1,4 @@
-package removedevice
+package adddevice
 
 import (
 	"context"
@@ -9,17 +9,18 @@ import (
 	"github.com/renatocosta55sp/modeling/slice"
 )
 
-type DeviceProjection struct {
+type DeviceReadModel struct {
 	repo persistence.RepoDevice
 }
 
-func NewDeviceProjection(repo persistence.RepoDevice) slice.EventHandleable {
-	return &DeviceProjection{
+func NewDeviceReadModel(repo persistence.RepoDevice) slice.EventHandleable {
+	return &DeviceReadModel{
 		repo: repo,
 	}
 }
 
-func (d DeviceProjection) On(ctx context.Context, event domain.Event) error {
-	evt := event.Data.(events.DeviceRemoved)
-	return d.repo.Remove(&evt, ctx)
+func (d DeviceReadModel) On(ctx context.Context, event domain.Event) error {
+	evt := event.Data.(events.DeviceAdded)
+	_, err := d.repo.Add(&evt, ctx)
+	return err
 }

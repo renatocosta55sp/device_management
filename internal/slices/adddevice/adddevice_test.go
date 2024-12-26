@@ -1,4 +1,4 @@
-package testsuite
+package adddevice
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"github.com/renatocosta55sp/device_management/internal/domain/commands"
 	"github.com/renatocosta55sp/device_management/internal/events"
 	"github.com/renatocosta55sp/device_management/internal/infra/adapters/persistence"
-	"github.com/renatocosta55sp/device_management/internal/slices/adddevice"
+	"github.com/renatocosta55sp/device_management/internal/infra/testsuite"
 	"github.com/renatocosta55sp/modeling/infra/bus"
 	"github.com/renatocosta55sp/modeling/slice"
 	"github.com/stretchr/testify/assert"
@@ -29,13 +29,13 @@ func init() {
 
 	ctx, ctxCancFunc = context.WithTimeout(context.Background(), 5*time.Second)
 
-	dbConn, container, err := InitTestContainer()
+	dbConn, container, err := testsuite.InitTestContainer()
 	if err != nil {
 		log.Fatalf("Failed to initialize test container: %v", err)
 	}
 	pgContainer = container
 
-	eventResultChan = adddevice.WireApp(ctx,
+	eventResultChan = WireApp(ctx,
 		eventBus,
 		*persistence.NewDeviceRepository(dbConn, "public"),
 	)

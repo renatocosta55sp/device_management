@@ -14,16 +14,16 @@ func InitRoutes(
 	db *pgxpool.Pool) {
 
 	res := adddevice.HttpServer{Db: db}
-	r.POST("/devices", adddevice.AddDeviceValidator, res.AddDevice)
+	r.POST("/devices", adddevice.AddDeviceRequestValidator, res.AddDevice)
 
 	resUpdateDevice := updatedevice.HttpServer{Db: db}
-	r.PUT("/devices/:id", updatedevice.UpdateDeviceValidator, resUpdateDevice.UpdateDevice)
+	r.PUT("/devices/:id", updatedevice.UpdateDeviceRequestValidator, resUpdateDevice.UpdateDevice)
 
 	patchDeviceRequest := updatedevice.PatchDeviceRequest{Repo: db}
-	r.PATCH("/devices/:id", patchDeviceRequest.UpdatePartiallyDeviceValidator, resUpdateDevice.UpdateDevice)
+	r.PATCH("/devices/:id", patchDeviceRequest.UpdatePartiallyDeviceRequestValidator, resUpdateDevice.UpdateDevice)
 
 	resRemoveDevice := removedevice.HttpServer{Db: db}
-	r.DELETE("/devices/:id", removedevice.RemoveDeviceValidator, resRemoveDevice.RemoveDevice)
+	r.DELETE("/devices/:id", removedevice.RemoveDeviceRequestValidator, resRemoveDevice.RemoveDevice)
 
 	resDevices := devices.HttpServer{Db: db}
 	r.GET("/devices/:id", resDevices.GetDeviceById)

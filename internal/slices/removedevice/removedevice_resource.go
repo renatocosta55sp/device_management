@@ -27,7 +27,7 @@ type RemoveDeviceRequest struct {
 	Id string
 }
 
-func RemoveDeviceValidator(ctx *gin.Context) {
+func RemoveDeviceRequestValidator(ctx *gin.Context) {
 
 	id := ctx.Param("id")
 

@@ -29,7 +29,7 @@ type UpdateDeviceRequest struct {
 	Brand string `json:"brand"  binding:"required"`
 }
 
-func UpdateDeviceValidator(ctx *gin.Context) {
+func UpdateDeviceRequestValidator(ctx *gin.Context) {
 
 	id := ctx.Param("id")
 
@@ -58,7 +58,7 @@ type PatchDeviceRequest struct {
 	Repo *pgxpool.Pool
 }
 
-func (p *PatchDeviceRequest) UpdatePartiallyDeviceValidator(ctx *gin.Context) {
+func (p *PatchDeviceRequest) UpdatePartiallyDeviceRequestValidator(ctx *gin.Context) {
 
 	id := ctx.Param("id")
 

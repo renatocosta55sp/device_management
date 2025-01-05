@@ -29,7 +29,7 @@ type AddDeviceRequest struct {
 	Brand string `json:"brand"  binding:"required"`
 }
 
-func AddDeviceValidator(ctx *gin.Context) {
+func AddDeviceRequestValidator(ctx *gin.Context) {
 
 	var requestData AddDeviceRequest
 

@@ -14,7 +14,7 @@ func InitRoutes(
 	db *pgxpool.Pool) {
 
 	res := adddevice.HttpServer{Db: db}
-	r.POST("/devices", adddevice.AddDeviceRequestValidator, res.AddDevice)
+	r.POST("/devices", adddevice.ValidateRequest, res.AddDevice)
 
 	resUpdateDevice := updatedevice.HttpServer{Db: db}
 	r.PUT("/devices/:id", updatedevice.UpdateDeviceRequestValidator, resUpdateDevice.UpdateDevice)

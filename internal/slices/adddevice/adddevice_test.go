@@ -7,7 +7,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/renatocosta55sp/device_management/internal/domain"
+
 	"github.com/renatocosta55sp/device_management/internal/domain/commands"
 	"github.com/renatocosta55sp/device_management/internal/events"
 	"github.com/renatocosta55sp/device_management/internal/infra/adapters/persistence"
@@ -19,26 +21,25 @@ import (
 )
 
 var ag = &bus.AggregateRootTestCase{}
-var eventBus = bus.NewEventBus()
 var ctx context.Context
+var raisedEvents map[string]string
 var ctxCancFunc context.CancelFunc
-var eventResultChan chan bus.EventResult
+var dbConn *pgxpool.Pool
 var pgContainer testcontainers.Container
+var container testcontainers.Container
+var err error
 
 func init() {
 
 	ctx, ctxCancFunc = context.WithTimeout(context.Background(), 5*time.Second)
+	raisedEvents = make(map[string]string)
 
-	dbConn, container, err := testsuite.InitTestContainer()
+	dbConn, container, err = testsuite.InitTestContainer()
 	if err != nil {
 		log.Fatalf("Failed to initialize test container: %v", err)
 	}
 	pgContainer = container
 
-	eventResultChan = WireApp(ctx,
-		eventBus,
-		*persistence.NewDeviceRepository(dbConn, "public"),
-	)
 }
 
 func runAddCommand() {
@@ -50,11 +51,17 @@ func runAddCommand() {
 		Brand:       "Apple",
 	}
 
-	device := domain.NewDevice(aggregateIdentifier)
+	commandResult, device, err := CommandGateway(ctx,
+		command,
+		*persistence.NewDeviceRepository(dbConn, "public"),
+	)
 
-	commandResult, err := device.HandleAdd(command)
 	if err != nil {
 		ag.T.Fatal(err)
+	}
+
+	for _, evt := range device.Events {
+		raisedEvents[evt.Type] = evt.Type
 	}
 
 	commandResultToCompare := slice.CommandResult{
@@ -63,16 +70,6 @@ func runAddCommand() {
 	}
 
 	assert.Equal(ag.T, commandResult, commandResultToCompare, "The CommandResult should be equal")
-
-	err = (&slice.CommandExecutionResult{
-		EventBus:        eventBus,
-		CtxCancFunc:     ctxCancFunc,
-		EventResultChan: eventResultChan,
-	}).Execute(device.Events)
-
-	if err != nil {
-		ag.T.Fatal(err)
-	}
 
 }
 
@@ -89,7 +86,7 @@ func TestAddDevice(t *testing.T) {
 
 	ag.
 		Given(runAddCommand).
-		When(eventBus.RaisedEvents()).
+		When(raisedEvents).
 		Then(
 			events.DeviceAddedEvent,
 		).

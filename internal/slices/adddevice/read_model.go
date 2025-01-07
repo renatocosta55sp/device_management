@@ -3,24 +3,23 @@ package adddevice
 import (
 	"context"
 
+	"github.com/gookit/event"
 	"github.com/renatocosta55sp/device_management/internal/events"
 	"github.com/renatocosta55sp/device_management/internal/infra/adapters/persistence"
-	"github.com/renatocosta55sp/modeling/domain"
-	"github.com/renatocosta55sp/modeling/slice"
 )
 
 type DeviceReadModel struct {
 	repo persistence.RepoDevice
+	ctx  context.Context
 }
 
-func NewDeviceReadModel(repo persistence.RepoDevice) slice.EventHandleable {
-	return &DeviceReadModel{
-		repo: repo,
+func (d *DeviceReadModel) Handle(e event.Event) error {
+	evt := e.Get("data").(events.DeviceAdded)
+	_, err := d.repo.Add(&evt, d.ctx)
+
+	if err != nil {
+		e.Set("error", err)
 	}
-}
 
-func (d DeviceReadModel) On(ctx context.Context, event domain.Event) error {
-	evt := event.Data.(events.DeviceAdded)
-	_, err := d.repo.Add(&evt, ctx)
-	return err
+	return nil
 }

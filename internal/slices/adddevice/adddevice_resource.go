@@ -1,20 +1,13 @@
 package adddevice
 
 import (
-	"context"
-	"time"
-
-	http_ "net/http"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/renatocosta55sp/device_management/internal/domain"
 	"github.com/renatocosta55sp/device_management/internal/domain/commands"
 	"github.com/renatocosta55sp/device_management/internal/infra/adapters/persistence"
-
-	"github.com/renatocosta55sp/modeling/infra/bus"
-	"github.com/renatocosta55sp/modeling/slice"
 	"github.com/sirupsen/logrus"
 )
 
@@ -24,17 +17,17 @@ type HttpServer struct {
 
 const requestDataKey = "requestData"
 
-type AddDeviceRequest struct {
+type DeviceRequest struct {
 	Name  string `json:"name"  binding:"required"`
 	Brand string `json:"brand"  binding:"required"`
 }
 
-func AddDeviceRequestValidator(ctx *gin.Context) {
+func ValidateRequest(ctx *gin.Context) {
 
-	var requestData AddDeviceRequest
+	var requestData DeviceRequest
 
 	if err := ctx.ShouldBindJSON(&requestData); err != nil {
-		ctx.JSON(http_.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		ctx.Abort()
 		return
 	}
@@ -49,11 +42,11 @@ func (h HttpServer) AddDevice(ctx *gin.Context) {
 
 	requestData, exists := ctx.Get(requestDataKey)
 	if !exists {
-		ctx.JSON(http_.StatusInternalServerError, gin.H{"error": "Request data not found"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Request data not found"})
 		return
 	}
 
-	data := requestData.(AddDeviceRequest)
+	data := requestData.(DeviceRequest)
 
 	aggregateIdentifier := uuid.New()
 	command := commands.AddDeviceCommand{
@@ -62,35 +55,17 @@ func (h HttpServer) AddDevice(ctx *gin.Context) {
 		Brand:       data.Brand,
 	}
 
-	device := domain.NewDevice(aggregateIdentifier)
-
-	commandResult, err := device.HandleAdd(command)
-	if err != nil {
-		logrus.WithError(err).Error("failed to validate device on command creation")
-		ctx.JSON(http_.StatusUnprocessableEntity, gin.H{"error": err.Error()})
-		return
-	}
-
-	eventBus := bus.NewEventBus()
-	_, ctxCancFunc := context.WithTimeout(context.Background(), 5*time.Second)
-
-	eventResultChan := WireApp(ctx,
-		eventBus,
+	commandResult, _, err := CommandGateway(ctx,
+		command,
 		*persistence.NewDeviceRepository(h.Db, "public"),
 	)
 
-	err = (&slice.CommandExecutionResult{
-		EventBus:        eventBus,
-		CtxCancFunc:     ctxCancFunc,
-		EventResultChan: eventResultChan,
-	}).Execute(device.Events)
-
 	if err != nil {
 		logrus.WithError(err).Error("failed to validate device on command creation")
-		ctx.JSON(http_.StatusUnprocessableEntity, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 		return
 	}
 
-	ctx.JSON(http_.StatusCreated, gin.H{"result": commandResult})
+	ctx.JSON(http.StatusCreated, gin.H{"result": commandResult})
 
 }

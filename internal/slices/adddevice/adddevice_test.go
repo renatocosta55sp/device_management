@@ -45,14 +45,14 @@ func init() {
 func runAddCommand() {
 
 	aggregateIdentifier := uuid.New()
-	command := commands.AddDeviceCommand{
-		AggregateID: aggregateIdentifier,
-		Name:        "IOS",
-		Brand:       "Apple",
-	}
 
-	commandResult, device, err := CommandGateway(ctx,
-		command,
+	commandResult, deviceAggregate, err := CommandGateway{}.Send(
+		ctx,
+		commands.AddDeviceCommand{
+			AggregateID: aggregateIdentifier,
+			Name:        "IOS",
+			Brand:       "Apple",
+		},
 		*persistence.NewDeviceRepository(dbConn, "public"),
 	)
 
@@ -60,7 +60,7 @@ func runAddCommand() {
 		ag.T.Fatal(err)
 	}
 
-	for _, evt := range device.Events {
+	for _, evt := range deviceAggregate.Events {
 		raisedEvents[evt.Type] = evt.Type
 	}
 

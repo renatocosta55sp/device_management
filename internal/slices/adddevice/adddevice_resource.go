@@ -48,15 +48,13 @@ func (h HttpServer) AddDevice(ctx *gin.Context) {
 
 	data := requestData.(DeviceRequest)
 
-	aggregateIdentifier := uuid.New()
-	command := commands.AddDeviceCommand{
-		AggregateID: aggregateIdentifier,
-		Name:        data.Name,
-		Brand:       data.Brand,
-	}
-
-	commandResult, _, err := CommandGateway(ctx,
-		command,
+	commandResult, _, err := CommandGateway{}.Send(
+		ctx,
+		commands.AddDeviceCommand{
+			AggregateID: uuid.New(),
+			Name:        data.Name,
+			Brand:       data.Brand,
+		},
 		*persistence.NewDeviceRepository(h.Db, "public"),
 	)
 

@@ -11,7 +11,9 @@ import (
 	"github.com/renatocosta55sp/modeling/slice"
 )
 
-func CommandGateway(ctx context.Context, command commands.AddDeviceCommand, repo persistence.RepoDevice) (commandResult slice.CommandResult, device *domain.DeviceAggregate, err error) {
+type CommandGateway struct{}
+
+func (c CommandGateway) Send(ctx context.Context, command commands.AddDeviceCommand, repo persistence.RepoDevice) (commandResult slice.CommandResult, device *domain.DeviceAggregate, err error) {
 
 	deviceReadModel := DeviceReadModel{repo: repo, ctx: ctx}
 	event.On(events.DeviceAddedEvent, &deviceReadModel)

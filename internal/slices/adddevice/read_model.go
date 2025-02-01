@@ -3,22 +3,24 @@ package adddevice
 import (
 	"context"
 
-	"github.com/gookit/event"
+	"github.com/renatocosta55sp/device_management/internal/domain"
 	"github.com/renatocosta55sp/device_management/internal/events"
-	"github.com/renatocosta55sp/device_management/internal/infra/adapters/persistence"
+	"github.com/renatocosta55sp/modeling/eventstore"
 )
 
 type DeviceReadModel struct {
-	repo persistence.RepoDevice
-	ctx  context.Context
+	deviceAggregate *domain.DeviceAggregate
+	eventStore      eventstore.EventStore
+	ctx             context.Context
 }
 
-func (d *DeviceReadModel) Handle(e event.Event) error {
-	evt := e.Get("data").(events.DeviceAdded)
-	_, err := d.repo.Add(&evt, d.ctx)
+func (d DeviceReadModel) Handle(event events.DeviceAdded) error {
 
-	if err != nil {
-		e.Set("error", err)
+	if err := d.eventStore.AppendToStream(d.ctx,
+		event.AggregateId.String(),
+		d.deviceAggregate.UncommittedEvents,
+		d.deviceAggregate.Version); err != nil {
+		return err
 	}
 
 	return nil

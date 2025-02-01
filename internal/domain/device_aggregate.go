@@ -3,7 +3,6 @@ package domain
 import (
 	"errors"
 
-	"github.com/google/uuid"
 	"github.com/renatocosta55sp/device_management/internal/domain/commands"
 	"github.com/renatocosta55sp/device_management/internal/events"
 	"github.com/renatocosta55sp/modeling/domain"
@@ -11,110 +10,62 @@ import (
 )
 
 type DeviceAggregate struct {
-	domain.AggregateRoot
+	domain.Aggregate
 	Name, Brand string
 }
 
-func NewDevice(
-	aggregateId uuid.UUID,
-) *DeviceAggregate {
-
-	device := &DeviceAggregate{
-		AggregateRoot: domain.AggregateRoot{AggregateID: aggregateId, Version: DeviceAggregateVersion},
-	}
-
-	return device
+func NewDeviceAggregate(stream []domain.Event) *DeviceAggregate {
+	d := &DeviceAggregate{}
+	d.hydrate(stream)
+	return d
 }
 
-func (d *DeviceAggregate) HandleAdd(command commands.AddDeviceCommand) (slice.CommandResult, error) {
-
-	if command.Name == "" {
-		return slice.CommandResult{
-			Identifier:        command.AggregateID,
-			AggregateSequence: DeviceAggregateVersion,
-		}, ErrEmptyName
+func (d *DeviceAggregate) hydrate(stream []domain.Event) {
+	for _, e := range stream {
+		d.Apply(e)
 	}
+}
 
-	if command.Brand == "" {
-		return slice.CommandResult{
-			Identifier:        command.AggregateID,
-			AggregateSequence: DeviceAggregateVersion,
-		}, ErrEmptyBrand
+func (d *DeviceAggregate) Apply(event domain.Event) {
+
+	switch e := event.(type) {
+	case events.DeviceAdded:
+		d.AggregateID = e.AggregateId
+		d.Name = e.Name
+		d.Brand = e.Brand
 	}
-
-	d.AggregateRoot.RecordThat(
-		domain.Event{
-			Type: events.DeviceAddedEvent,
-			Data: events.DeviceAdded{
-				AggregateId: command.AggregateID,
-				Name:        command.Name,
-				Brand:       command.Brand,
-			},
-		},
-	)
-
-	return slice.CommandResult{
-		Identifier:        command.AggregateID,
-		AggregateSequence: DeviceAggregateVersion,
-	}, nil
 
 }
 
-func (d *DeviceAggregate) HandleUpdate(command commands.UpdateDeviceCommand) (slice.CommandResult, error) {
+func (d *DeviceAggregate) Add(cmd commands.AddDeviceCommand) (slice.CommandResult, error) {
 
-	if command.Name == "" {
-		return slice.CommandResult{
-			Identifier:        command.AggregateID,
-			AggregateSequence: DeviceAggregateVersion,
-		}, ErrEmptyName
+	commandResult := slice.CommandResult{
+		Identifier:        cmd.AggregateID,
+		AggregateSequence: d.Version,
 	}
 
-	if command.Brand == "" {
-		return slice.CommandResult{
-			Identifier:        command.AggregateID,
-			AggregateSequence: DeviceAggregateVersion,
-		}, ErrEmptyBrand
+	if cmd.Name == "" {
+		return commandResult, ErrEmptyName
 	}
 
-	d.AggregateRoot.RecordThat(
-		domain.Event{
-			Type: events.DeviceUpdatedEvent,
-			Data: events.DeviceUpdated{
-				AggregateId: command.AggregateID,
-				Name:        command.Name,
-				Brand:       command.Brand,
-			},
-		},
-	)
+	if cmd.Brand == "" {
+		return commandResult, ErrEmptyBrand
+	}
 
-	return slice.CommandResult{
-		Identifier:        command.AggregateID,
-		AggregateSequence: DeviceAggregateVersion,
-	}, nil
+	event := events.DeviceAdded{
+		AggregateId: cmd.AggregateID,
+		Name:        cmd.Name,
+		Brand:       cmd.Brand,
+	}
 
-}
+	d.Version += 1
+	d.UncommittedEvents = append(d.UncommittedEvents, event)
 
-func (d *DeviceAggregate) HandleDelete(command commands.RemoveDeviceCommand) (slice.CommandResult, error) {
+	d.Apply(event)
 
-	d.AggregateRoot.RecordThat(
-		domain.Event{
-			Type: events.DeviceRemovedEvent,
-			Data: events.DeviceRemoved{
-				AggregateId: command.AggregateID,
-				Name:        command.Name,
-				Brand:       command.Brand,
-			},
-		},
-	)
-
-	return slice.CommandResult{
-		Identifier:        command.AggregateID,
-		AggregateSequence: DeviceAggregateVersion,
-	}, nil
+	return commandResult, nil
 
 }
-
-var DeviceAggregateVersion = int8(1)
 
 var (
 	ErrEmptyName  = errors.New("error.device.name.required")

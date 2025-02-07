@@ -3,14 +3,14 @@ package domain
 import (
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/renatocosta55sp/device_management/internal/domain/commands"
+	"github.com/renatocosta55sp/modeling/domain"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestInvalidArguments(t *testing.T) {
 
-	device := NewDevice(uuid.UUID{})
+	device := NewDeviceAggregate([]domain.Event{})
 
 	var tests = []struct {
 		name, brand string
@@ -35,7 +35,7 @@ func TestInvalidArguments(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		_, err := device.HandleAdd(
+		_, err := device.Add(
 			commands.AddDeviceCommand{
 				AggregateID: device.AggregateID,
 				Name:        test.name,

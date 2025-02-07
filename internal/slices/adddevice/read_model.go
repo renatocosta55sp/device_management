@@ -14,7 +14,7 @@ type DeviceReadModel struct {
 	ctx             context.Context
 }
 
-func (d DeviceReadModel) Handle(event events.DeviceAdded) error {
+func (d DeviceReadModel) Handle(event *events.DeviceAdded) error {
 
 	if err := d.eventStore.AppendToStream(d.ctx,
 		event.AggregateId.String(),

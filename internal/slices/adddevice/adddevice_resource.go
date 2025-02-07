@@ -8,11 +8,13 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/renatocosta55sp/device_management/internal/domain/commands"
 	"github.com/renatocosta55sp/device_management/internal/infra/adapters/persistence"
+	"github.com/renatocosta55sp/modeling/infra/bus"
 	"github.com/sirupsen/logrus"
 )
 
 type HttpServer struct {
-	Db *pgxpool.Pool
+	Db                  *pgxpool.Pool
+	DomainEventRegistry *bus.EventRegistry
 }
 
 const requestDataKey = "requestData"
@@ -48,14 +50,15 @@ func (h HttpServer) AddDevice(ctx *gin.Context) {
 
 	data := requestData.(DeviceRequest)
 
-	commandResult, _, err := CommandGateway{}.Send(
+	commandResult, _, err := CommandExecutor{
+		persistence.NewPersistentEventStore(h.Db, h.DomainEventRegistry, "public"),
+	}.Send(
 		ctx,
 		commands.AddDeviceCommand{
 			AggregateID: uuid.New(),
 			Name:        data.Name,
 			Brand:       data.Brand,
 		},
-		*persistence.NewDeviceRepository(h.Db, "public"),
 	)
 
 	if err != nil {

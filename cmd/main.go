@@ -40,8 +40,10 @@ func main() {
 
 	defer db.Close()
 
+	domainEventRegistry := configureDomainEventRegistry()
+
 	server := gin.Default()
-	infra.InitRoutes(&server.RouterGroup, db)
+	infra.InitRoutes(&server.RouterGroup, db, domainEventRegistry)
 
 	serverErr := make(chan error, 1)
 	go func() {

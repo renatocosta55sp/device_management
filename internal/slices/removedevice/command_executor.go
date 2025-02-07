@@ -1,4 +1,4 @@
-package adddevice
+package removedevice
 
 import (
 	"context"
@@ -14,7 +14,7 @@ type CommandExecutor struct {
 	eventStore eventstore.EventStore
 }
 
-func (c CommandExecutor) Send(ctx context.Context, cmd commands.AddDeviceCommand) (commandResult slice.CommandResult, device *domain.DeviceAggregate, err error) {
+func (c CommandExecutor) Send(ctx context.Context, cmd commands.RemoveDeviceCommand) (commandResult slice.CommandResult, device *domain.DeviceAggregate, err error) {
 	//Get the current state
 	stream, err := c.eventStore.ReadStream(ctx, cmd.AggregateID.String())
 
@@ -24,7 +24,7 @@ func (c CommandExecutor) Send(ctx context.Context, cmd commands.AddDeviceCommand
 
 	deviceAggregate := domain.NewDeviceAggregate(stream)
 
-	commandResult, err = deviceAggregate.Add(cmd)
+	commandResult, err = deviceAggregate.Remove(cmd)
 	if err != nil {
 		return commandResult, nil, err
 	}

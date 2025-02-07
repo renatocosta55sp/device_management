@@ -1,4 +1,4 @@
-create sequence domain_event_entry_seq start with 1 increment by 50;
+create sequence domain_event_entry_seq start with 1 increment by 1;
 
 create table domain_event_entry
 (

@@ -3,23 +3,25 @@ package removedevice
 import (
 	"context"
 
+	"github.com/renatocosta55sp/device_management/internal/domain"
 	"github.com/renatocosta55sp/device_management/internal/events"
-	"github.com/renatocosta55sp/device_management/internal/infra/adapters/persistence"
-	"github.com/renatocosta55sp/modeling/domain"
-	"github.com/renatocosta55sp/modeling/slice"
+	"github.com/renatocosta55sp/modeling/eventstore"
 )
 
 type DeviceReadModel struct {
-	repo persistence.RepoDevice
+	deviceAggregate *domain.DeviceAggregate
+	eventStore      eventstore.EventStore
+	ctx             context.Context
 }
 
-func NewDeviceReadModel(repo persistence.RepoDevice) slice.EventHandleable {
-	return &DeviceReadModel{
-		repo: repo,
+func (d DeviceReadModel) Handle(event *events.DeviceRemoved) error {
+
+	if err := d.eventStore.AppendToStream(d.ctx,
+		event.AggregateId.String(),
+		d.deviceAggregate.UncommittedEvents,
+		d.deviceAggregate.Version); err != nil {
+		return err
 	}
-}
 
-func (d DeviceReadModel) On(ctx context.Context, event domain.Event) error {
-	evt := event.Data.(events.DeviceRemoved)
-	return d.repo.Remove(&evt, ctx)
+	return nil
 }

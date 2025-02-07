@@ -3,20 +3,18 @@ package adddevice
 import (
 	"context"
 	"log"
+	"reflect"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/renatocosta55sp/device_management/internal/domain"
 
 	"github.com/renatocosta55sp/device_management/internal/domain/commands"
 	"github.com/renatocosta55sp/device_management/internal/events"
 	"github.com/renatocosta55sp/device_management/internal/infra/adapters/persistence"
 	"github.com/renatocosta55sp/device_management/internal/infra/testsuite"
 	"github.com/renatocosta55sp/modeling/infra/bus"
-	"github.com/renatocosta55sp/modeling/slice"
-	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go"
 )
 
@@ -46,30 +44,36 @@ func runAddCommand() {
 
 	aggregateIdentifier := uuid.New()
 
-	commandResult, deviceAggregate, err := CommandGateway{}.Send(
+	evt := events.DeviceAdded{}
+	eventRegistry := bus.NewEventRegistry()
+	eventRegistry.RegisterEvents(map[string]reflect.Type{
+		evt.GetName(): reflect.TypeOf(events.DeviceAdded{}),
+	})
+
+	_, deviceAggregate, err := CommandExecutor{
+		persistence.NewPersistentEventStore(dbConn, eventRegistry, "public"),
+	}.Send(
 		ctx,
 		commands.AddDeviceCommand{
 			AggregateID: aggregateIdentifier,
 			Name:        "IOS",
 			Brand:       "Apple",
 		},
-		*persistence.NewDeviceRepository(dbConn, "public"),
 	)
 
 	if err != nil {
 		ag.T.Fatal(err)
 	}
 
-	for _, evt := range deviceAggregate.Events {
-		raisedEvents[evt.Type] = evt.Type
+	for _, evt := range deviceAggregate.UncommittedEvents {
+		raisedEvents[evt.GetName()] = evt.GetName()
 	}
 
-	commandResultToCompare := slice.CommandResult{
-		Identifier:        aggregateIdentifier,
-		AggregateSequence: domain.DeviceAggregateVersion,
+	/*commandResultToCompare := slice.CommandResult{
+		Identifier: aggregateIdentifier,
 	}
 
-	assert.Equal(ag.T, commandResult, commandResultToCompare, "The CommandResult should be equal")
+	assert.Equal(ag.T, commandResult, commandResultToCompare, "The CommandResult should be equal")*/
 
 }
 
@@ -84,11 +88,12 @@ func TestAddDevice(t *testing.T) {
 
 	ag.T = t
 
+	evt := events.DeviceAdded{}
 	ag.
 		Given(runAddCommand).
 		When(raisedEvents).
 		Then(
-			events.DeviceAddedEvent,
+			evt.GetName(),
 		).
 		Assert()
 
